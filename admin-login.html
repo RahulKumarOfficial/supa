@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Admin Login | GiftBuyer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(
+        135deg,
+        #111827,
+        #4f46e5
+    );
+}
+
+.box{
+    width:100%;
+    max-width:400px;
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    margin-top:0;
+    color:#111827;
+}
+
+.subtitle{
+    text-align:center;
+    color:#777;
+    margin-bottom:25px;
+}
+
+label{
+    display:block;
+    margin-bottom:7px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border:1px solid #ddd;
+    border-radius:9px;
+    margin-bottom:15px;
+    outline:none;
+}
+
+input:focus{
+    border-color:#4f46e5;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:0;
+    border-radius:9px;
+    background:#4f46e5;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#4338ca;
+}
+
+/* FORGOT PASSWORD */
+
+.forgot{
+    display:block;
+    text-align:right;
+    margin-top:-5px;
+    margin-bottom:18px;
+    color:#4f46e5;
+    text-decoration:none;
+    font-size:14px;
+    cursor:pointer;
+}
+
+.forgot:hover{
+    text-decoration:underline;
+}
+
+.message{
+    text-align:center;
+    margin-top:15px;
+    line-height:1.5;
+}
+
+.back{
+    display:block;
+    text-align:center;
+    margin-top:20px;
+    color:#4f46e5;
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>
+Admin Login
+</h1>
+
+<div class="subtitle">
+GiftBuyer Administration
+</div>
+
+
+<form id="adminForm">
+
+<label>
+Email
+</label>
+
+<input
+type="email"
+id="email"
+required
+autocomplete="username"
+placeholder="admin@giftbuyer.in"
+>
+
+
+<label>
+Password
+</label>
+
+<input
+type="password"
+id="password"
+required
+autocomplete="current-password"
+placeholder="Enter password"
+>
+
+
+<!-- FORGOT PASSWORD -->
+
+<a
+href="#"
+id="forgotPassword"
+class="forgot">
+
+Forgot Password?
+
+</a>
+
+
+<button type="submit">
+Admin Login
+</button>
+
+</form>
+
+
+<div
+id="message"
+class="message">
+</div>
+
+
+<a
+href="index.html"
+class="back">
+
+← Customer Login
+
+</a>
+
+</div>
+
+
+<script>
+
+
+/* SUPABASE */
+
+const SUPABASE_URL =
+"https://pndmtbntmvmeonjnoeds.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lQkSQdQIWm4o4AyKE0RzsQ_G_NDNtuB";
+
+
+const client =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+const message =
+document.getElementById("message");
+
+
+/* EXISTING SESSION */
+
+async function checkAdminSession(){
+
+    const {
+        data:{user}
+    } =
+    await client.auth.getUser();
+
+
+    if(!user){
+        return;
+    }
+
+
+    const {
+        data:profile
+    } =
+    await client
+    .from("profiles")
+    .select("role")
+    .eq("id",user.id)
+    .maybeSingle();
+
+
+    if(profile?.role === "admin"){
+
+        window.location.replace(
+            "admin.html"
+        );
+
+    }
+
+}
+
+
+checkAdminSession();
+
+
+
+/* LOGIN */
+
+document
+.getElementById("adminForm")
+.addEventListener(
+"submit",
+async function(e){
+
+    e.preventDefault();
+
+
+    message.textContent =
+        "Checking login...";
+
+    message.style.color =
+        "#4f46e5";
+
+
+    const email =
+        document
+        .getElementById("email")
+        .value
+        .trim();
+
+
+    const password =
+        document
+        .getElementById("password")
+        .value;
+
+
+    const {
+        data,
+        error
+    } =
+    await client.auth.signInWithPassword({
+
+        email,
+        password
+
+    });
+
+
+    if(error){
+
+        message.textContent =
+            "Invalid email or password.";
+
+        message.style.color =
+            "#dc2626";
+
+        return;
+
+    }
+
+
+    const {
+        data:profile,
+        error:profileError
+    } =
+    await client
+    .from("profiles")
+    .select("role")
+    .eq("id",data.user.id)
+    .maybeSingle();
+
+
+    if(
+        profileError ||
+        !profile ||
+        profile.role !== "admin"
+    ){
+
+        await client.auth.signOut();
+
+
+        message.textContent =
+            "This account is not an admin account.";
+
+        message.style.color =
+            "#dc2626";
+
+        return;
+
+    }
+
+
+    window.location.replace(
+        "admin.html"
+    );
+
+});
+
+
+
+/* FORGOT PASSWORD */
+
+document
+.getElementById("forgotPassword")
+.addEventListener(
+"click",
+async function(e){
+
+    e.preventDefault();
+
+
+    const email =
+        document
+        .getElementById("email")
+        .value
+        .trim();
+
+
+    /* EMAIL REQUIRED */
+
+    if(!email){
+
+        message.textContent =
+            "Please enter your admin email first.";
+
+        message.style.color =
+            "#dc2626";
+
+        document
+        .getElementById("email")
+        .focus();
+
+        return;
+
+    }
+
+
+    message.textContent =
+        "Sending password reset link...";
+
+    message.style.color =
+        "#4f46e5";
+
+
+    /* SEND RESET EMAIL */
+
+    const {
+        error
+    } =
+    await client.auth.resetPasswordForEmail(
+        email,
+        {
+            redirectTo:
+            "https://giftbuyer.in/reset-password.html"
+        }
+    );
+
+
+    if(error){
+
+        message.textContent =
+            error.message;
+
+        message.style.color =
+            "#dc2626";
+
+        return;
+
+    }
+
+
+    message.innerHTML =
+        "Password reset link has been sent.<br>" +
+        "Please check your email.";
+
+    message.style.color =
+        "#16a34a";
+
+});
+
+</script>
+
+</body>
+</html>

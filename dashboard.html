@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Customer Dashboard | GiftBuyer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f5f7fb;
+    color:#111827;
+}
+
+header{
+    background:#4f46e5;
+    color:white;
+    padding:16px 20px;
+}
+
+.header-inner{
+    max-width:1100px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:800;
+}
+
+.logout{
+    border:0;
+    padding:10px 16px;
+    border-radius:8px;
+    background:white;
+    color:#4f46e5;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.container{
+    max-width:1100px;
+    margin:30px auto;
+    padding:0 15px;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:16px;
+    margin-bottom:25px;
+    box-shadow:0 5px 25px rgba(0,0,0,.06);
+}
+
+h2{
+    margin-top:0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+    gap:15px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:9px;
+    font-size:15px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+button.submit{
+    width:100%;
+    padding:13px;
+    background:#4f46e5;
+    border:0;
+    border-radius:9px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+    text-align:left;
+}
+
+.status{
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.pending{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.approved{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.rejected{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.completed{
+    background:#dbeafe;
+    color:#1e40af;
+}
+
+.message{
+    margin-top:15px;
+    font-weight:bold;
+}
+
+@media(max-width:700px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .header-inner{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .card{
+        padding:18px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="header-inner">
+
+<div class="logo">
+GiftBuyer
+</div>
+
+<div>
+
+<span id="userEmail"></span>
+
+<button
+class="logout"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</div>
+
+</header>
+
+
+<div class="container">
+
+
+<div class="card">
+
+<h2>
+Submit Gift Card
+</h2>
+
+<form id="giftForm">
+
+<div class="grid">
+
+<div>
+
+<label>Gift Card Brand</label>
+
+<select id="brand" required>
+
+<option value="">Select Brand</option>
+
+<option>Overwatch 2</option>
+<option>Roblox</option>
+<option>PlayStation</option>
+<option>League of Legends</option>
+<option>Sea of Thieves</option>
+<option>Valorant</option>
+<option>Amazon</option>
+<option>Croma</option>
+<option>Flipkart</option>
+<option>App Store</option>
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>Custom Brand</label>
+
+<input
+id="customBrand"
+placeholder="If Other"
+>
+
+</div>
+
+
+<div>
+
+<label>Card Value ₹</label>
+
+<input
+type="number"
+id="cardValue"
+min="1"
+step="0.01"
+required
+>
+
+</div>
+
+
+<div>
+
+<label>Your Expected Price ₹</label>
+
+<input
+type="number"
+id="offerPrice"
+min="0"
+step="0.01"
+required
+>
+
+</div>
+
+
+<div>
+
+<label>Gift Card Code</label>
+
+<input
+id="cardCode"
+required
+>
+
+</div>
+
+
+<div>
+
+<label>PIN</label>
+
+<input
+id="pin"
+>
+
+</div>
+
+
+<div class="full">
+
+<button
+class="submit"
+type="submit">
+
+Submit Gift Card
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+<div
+id="message"
+class="message">
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+My Gift Cards
+</h2>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+<th>Brand</th>
+<th>Value</th>
+<th>Offer</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="cardsBody">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://pndmtbntmvmeonjnoeds.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lQkSQdQIWm4o4AyKE0RzsQ_G_NDNtuB";
+
+const client =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+let currentUser = null;
+
+
+/* SECURITY GUARD */
+
+async function guard(){
+
+    const {
+        data:{
+            user
+        }
+    } = await client.auth.getUser();
+
+
+    if(!user){
+
+        window.location.replace(
+            "index.html"
+        );
+
+        return false;
+    }
+
+
+    currentUser = user;
+
+
+    const {
+        data:profile,
+        error
+    } = await client
+        .from("profiles")
+        .select("role,email,mobile_number")
+        .eq("id",user.id)
+        .single();
+
+
+    if(error || !profile){
+
+        await client.auth.signOut();
+
+        window.location.replace(
+            "index.html"
+        );
+
+        return false;
+    }
+
+
+    if(profile.role === "admin"){
+
+        window.location.replace(
+            "admin.html"
+        );
+
+        return false;
+    }
+
+
+    document.getElementById(
+        "userEmail"
+    ).textContent = profile.email;
+
+
+    await loadCards();
+
+    return true;
+}
+
+
+/* LOAD CUSTOMER CARDS */
+
+async function loadCards(){
+
+    const {
+        data,
+        error
+    } = await client
+        .from("gift_cards")
+        .select(
+            "created_at,brand,custom_brand_name,card_value,offer_price,status"
+        )
+        .eq("user_id",currentUser.id)
+        .order(
+            "created_at",
+            {ascending:false}
+        );
+
+
+    const body =
+        document.getElementById(
+            "cardsBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if(error){
+
+        body.innerHTML =
+            "<tr><td colspan='5'>Unable to load cards.</td></tr>";
+
+        return;
+    }
+
+
+    if(!data || data.length === 0){
+
+        body.innerHTML =
+            "<tr><td colspan='5'>No gift cards submitted yet.</td></tr>";
+
+        return;
+    }
+
+
+    data.forEach(card => {
+
+        const tr =
+            document.createElement("tr");
+
+
+        const date =
+            new Date(
+                card.created_at
+            ).toLocaleDateString(
+                "en-IN"
+            );
+
+
+        const brand =
+            card.brand === "Other" &&
+            card.custom_brand_name
+            ? card.custom_brand_name
+            : card.brand;
+
+
+        tr.innerHTML = `
+
+            <td>${date}</td>
+
+            <td>${escapeHtml(brand)}</td>
+
+            <td>₹${Number(card.card_value).toFixed(2)}</td>
+
+            <td>₹${Number(card.offer_price).toFixed(2)}</td>
+
+            <td>
+                <span class="status ${card.status}">
+                    ${escapeHtml(card.status)}
+                </span>
+            </td>
+
+        `;
+
+
+        body.appendChild(tr);
+
+    });
+
+}
+
+
+/* SUBMIT CARD */
+
+document
+.getElementById("giftForm")
+.addEventListener(
+    "submit",
+    async function(e){
+
+        e.preventDefault();
+
+
+        const brand =
+            document.getElementById(
+                "brand"
+            ).value;
+
+
+        const customBrand =
+            document.getElementById(
+                "customBrand"
+            ).value.trim();
+
+
+        const cardValue =
+            Number(
+                document.getElementById(
+                    "cardValue"
+                ).value
+            );
+
+
+        const offerPrice =
+            Number(
+                document.getElementById(
+                    "offerPrice"
+                ).value
+            );
+
+
+        const cardCode =
+            document.getElementById(
+                "cardCode"
+            ).value.trim();
+
+
+        const pin =
+            document.getElementById(
+                "pin"
+            ).value.trim();
+
+
+        if(
+            !brand ||
+            !cardCode ||
+            !cardValue ||
+            offerPrice < 0
+        ){
+
+            showMessage(
+                "Please fill all required fields.",
+                "#dc2626"
+            );
+
+            return;
+        }
+
+
+        showMessage(
+            "Submitting...",
+            "#4f46e5"
+        );
+
+
+        const {
+            error
+        } = await client
+            .from("gift_cards")
+            .insert({
+
+                user_id:currentUser.id,
+
+                brand,
+
+                custom_brand_name:
+                    customBrand || null,
+
+                card_code:cardCode,
+
+                pin:pin || null,
+
+                card_value:cardValue,
+
+                offer_price:offerPrice
+
+            });
+
+
+        if(error){
+
+            showMessage(
+                error.message,
+                "#dc2626"
+            );
+
+            return;
+        }
+
+
+        document
+            .getElementById("giftForm")
+            .reset();
+
+
+        showMessage(
+            "Gift card submitted successfully.",
+            "#16a34a"
+        );
+
+
+        await loadCards();
+
+    }
+);
+
+
+function showMessage(text,color){
+
+    const el =
+        document.getElementById(
+            "message"
+        );
+
+    el.textContent = text;
+    el.style.color = color;
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* LOGOUT */
+
+async function logout(){
+
+    await client.auth.signOut();
+
+    window.location.replace(
+        "index.html"
+    );
+
+}
+
+
+guard();
+
+</script>
+
+</body>
+
+</html>

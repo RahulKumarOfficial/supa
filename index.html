@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login / Register | GiftBuyer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#4f46e5,#7c3aed);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.box{
+    width:100%;
+    max-width:420px;
+    background:#fff;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.logo{
+    text-align:center;
+    font-size:30px;
+    font-weight:800;
+    color:#4f46e5;
+    margin-bottom:20px;
+}
+
+.tabs{
+    display:flex;
+    margin-bottom:25px;
+    border-bottom:1px solid #ddd;
+}
+
+.tabs button{
+    flex:1;
+    padding:13px;
+    border:0;
+    background:none;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.tabs button.active{
+    color:#4f46e5;
+    font-weight:bold;
+    border-bottom:3px solid #4f46e5;
+}
+
+.form{
+    display:none;
+}
+
+.form.active{
+    display:block;
+}
+
+label{
+    display:block;
+    margin:12px 0 6px;
+    font-weight:600;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    outline:none;
+    font-size:15px;
+}
+
+input:focus{
+    border-color:#4f46e5;
+}
+
+.main-btn{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#4f46e5;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.main-btn:hover{
+    background:#4338ca;
+}
+
+.message{
+    margin-top:15px;
+    text-align:center;
+    font-size:14px;
+}
+
+.admin-link{
+    display:block;
+    text-align:center;
+    margin-top:20px;
+    color:#4f46e5;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.small{
+    text-align:center;
+    color:#777;
+    font-size:13px;
+    margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <div class="logo">
+        GiftBuyer
+    </div>
+
+    <div class="tabs">
+
+        <button id="loginTab"
+                class="active"
+                onclick="showLogin()">
+            Login
+        </button>
+
+        <button id="registerTab"
+                onclick="showRegister()">
+            Register
+        </button>
+
+    </div>
+
+
+    <!-- LOGIN -->
+
+    <form id="loginForm"
+          class="form active">
+
+        <label>Email</label>
+
+        <input
+            type="email"
+            id="loginEmail"
+            required
+            autocomplete="email"
+        >
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            id="loginPassword"
+            required
+            autocomplete="current-password"
+        >
+
+        <button
+            class="main-btn"
+            type="submit">
+            Login
+        </button>
+
+    </form>
+
+
+    <!-- REGISTER -->
+
+    <form id="registerForm"
+          class="form">
+
+        <label>Email</label>
+
+        <input
+            type="email"
+            id="registerEmail"
+            required
+            autocomplete="email"
+        >
+
+        <label>Mobile Number</label>
+
+        <input
+            type="tel"
+            id="mobile"
+            required
+            maxlength="10"
+            pattern="[0-9]{10}"
+        >
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            id="registerPassword"
+            required
+            minlength="6"
+            autocomplete="new-password"
+        >
+
+        <button
+            class="main-btn"
+            type="submit">
+            Create Account
+        </button>
+
+    </form>
+
+
+    <div id="message"
+         class="message">
+    </div>
+
+    <a href="admin-login.html"
+       class="admin-link">
+        Admin Login
+    </a>
+
+    <div class="small">
+        Secure authentication powered by Supabase
+    </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://pndmtbntmvmeonjnoeds.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lQkSQdQIWm4o4AyKE0RzsQ_G_NDNtuB";
+
+const client =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+const message =
+document.getElementById("message");
+
+
+function showMessage(text,color="#333"){
+    message.textContent = text;
+    message.style.color = color;
+}
+
+
+function showLogin(){
+
+    document
+        .getElementById("loginForm")
+        .classList.add("active");
+
+    document
+        .getElementById("registerForm")
+        .classList.remove("active");
+
+    document
+        .getElementById("loginTab")
+        .classList.add("active");
+
+    document
+        .getElementById("registerTab")
+        .classList.remove("active");
+
+    showMessage("");
+
+}
+
+
+function showRegister(){
+
+    document
+        .getElementById("registerForm")
+        .classList.add("active");
+
+    document
+        .getElementById("loginForm")
+        .classList.remove("active");
+
+    document
+        .getElementById("registerTab")
+        .classList.add("active");
+
+    document
+        .getElementById("loginTab")
+        .classList.remove("active");
+
+    showMessage("");
+
+}
+
+
+/* CHECK EXISTING LOGIN */
+
+async function checkLogin(){
+
+    const {
+        data:{
+            user
+        }
+    } = await client.auth.getUser();
+
+    if(!user) return;
+
+
+    const {
+        data:profile
+    } = await client
+        .from("profiles")
+        .select("role")
+        .eq("id",user.id)
+        .maybeSingle();
+
+
+    if(profile?.role === "admin"){
+
+        window.location.replace(
+            "admin.html"
+        );
+
+    }else{
+
+        window.location.replace(
+            "dashboard.html"
+        );
+
+    }
+
+}
+
+
+checkLogin();
+
+
+/* CUSTOMER LOGIN */
+
+document
+.getElementById("loginForm")
+.addEventListener(
+    "submit",
+    async function(e){
+
+        e.preventDefault();
+
+        showMessage(
+            "Logging in...",
+            "#4f46e5"
+        );
+
+
+        const email =
+            document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+        const password =
+            document
+            .getElementById("loginPassword")
+            .value;
+
+
+        const {
+            data,
+            error
+        } = await client.auth.signInWithPassword({
+            email,
+            password
+        });
+
+
+        if(error){
+
+            showMessage(
+                error.message,
+                "#dc2626"
+            );
+
+            return;
+        }
+
+
+        const {
+            data:profile,
+            error:profileError
+        } = await client
+            .from("profiles")
+            .select("role")
+            .eq("id",data.user.id)
+            .single();
+
+
+        if(profileError){
+
+            await client.auth.signOut();
+
+            showMessage(
+                "Profile not found.",
+                "#dc2626"
+            );
+
+            return;
+        }
+
+
+        if(profile.role === "admin"){
+
+            window.location.replace(
+                "admin.html"
+            );
+
+        }else{
+
+            window.location.replace(
+                "dashboard.html"
+            );
+
+        }
+
+    }
+);
+
+
+/* CUSTOMER REGISTER */
+
+document
+.getElementById("registerForm")
+.addEventListener(
+    "submit",
+    async function(e){
+
+        e.preventDefault();
+
+        showMessage(
+            "Creating account...",
+            "#4f46e5"
+        );
+
+
+        const email =
+            document
+            .getElementById("registerEmail")
+            .value
+            .trim();
+
+        const mobile =
+            document
+            .getElementById("mobile")
+            .value
+            .trim();
+
+        const password =
+            document
+            .getElementById("registerPassword")
+            .value;
+
+
+        if(!/^[0-9]{10}$/.test(mobile)){
+
+            showMessage(
+                "Enter a valid 10 digit mobile number.",
+                "#dc2626"
+            );
+
+            return;
+        }
+
+
+        const {
+            data,
+            error
+        } = await client.auth.signUp({
+
+            email,
+
+            password,
+
+            options:{
+                data:{
+                    mobile_number:mobile
+                }
+            }
+
+        });
+
+
+        if(error){
+
+            showMessage(
+                error.message,
+                "#dc2626"
+            );
+
+            return;
+        }
+
+
+        if(data.session){
+
+            window.location.replace(
+                "dashboard.html"
+            );
+
+        }else{
+
+            showMessage(
+                "Account created. Please verify your email if email verification is enabled.",
+                "#16a34a"
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
